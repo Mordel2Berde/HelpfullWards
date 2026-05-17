@@ -1,0 +1,118 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- ─── Local overrides (gitignored) ───────────────────────────────────
+	     Create HelpfullWards.user.props next to this csproj to override any
+	     property below without touching the committed file. Example:
+
+	         <Project>
+	           <PropertyGroup>
+	             <BepInExProfile>/your/path/to/BepInEx</BepInExProfile>
+	             <ValheimInstall>/your/path/to/Valheim</ValheimInstall>
+	           </PropertyGroup>
+	         </Project>
+	-->
+	<Import Project="HelpfullWards.user.props" Condition="Exists('HelpfullWards.user.props')" />
+
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+		<OutputType>Library</OutputType>
+		<AssemblyName>HelpfullWards</AssemblyName>
+		<RootNamespace>HelpfullWards</RootNamespace>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<LangVersion>latest</LangVersion>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	</PropertyGroup>
+
+	<!-- ─── External paths ─────────────────────────────────────────────────
+	     Resolution priority (first non-empty wins):
+	       1. Property set in HelpfullWards.user.props (gitignored).
+	       2. Environment variable VALHEIM_INSTALL / BEPINEX_PROFILE.
+	       3. Per-OS Steam default (used when none of the above is set).
+	-->
+	<PropertyGroup>
+		<ValheimInstall Condition="'$(ValheimInstall)' == ''">$(VALHEIM_INSTALL)</ValheimInstall>
+		<ValheimInstall Condition="'$(ValheimInstall)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimInstall>
+		<ValheimInstall Condition="'$(ValheimInstall)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">$(HOME)/.local/share/Steam/steamapps/common/Valheim</ValheimInstall>
+		<ValheimInstall Condition="'$(ValheimInstall)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">$(HOME)/Library/Application Support/Steam/steamapps/common/Valheim</ValheimInstall>
+
+		<ValheimManaged>$(ValheimInstall)/valheim_Data/Managed</ValheimManaged>
+
+		<BepInExProfile Condition="'$(BepInExProfile)' == ''">$(BEPINEX_PROFILE)</BepInExProfile>
+		<BepInExProfile Condition="'$(BepInExProfile)' == ''">$(ValheimInstall)/BepInEx</BepInExProfile>
+	</PropertyGroup>
+
+	<!-- ─── BepInEx core ──────────────────────────────────────────────── -->
+	<ItemGroup>
+		<Reference Include="BepInEx">
+			<HintPath>$(BepInExProfile)/core/BepInEx.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="0Harmony">
+			<HintPath>$(BepInExProfile)/core/0Harmony.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<!-- ─── Jotunn ────────────────────────────────────────────────────── -->
+	<ItemGroup>
+		<Reference Include="Jotunn">
+			<HintPath>$(BepInExProfile)/plugins/ValheimModding-Jotunn/Jotunn.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<!-- ─── Newtonsoft.Json (shipped by ValheimModding-JsonDotNET) ────── -->
+	<ItemGroup>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(BepInExProfile)/plugins/ValheimModding-JsonDotNET/Newtonsoft.Json.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<!-- ─── Unity / Valheim assemblies ────────────────────────────────── -->
+	<ItemGroup>
+		<Reference Include="UnityEngine">
+			<HintPath>$(ValheimManaged)/UnityEngine.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>$(ValheimManaged)/UnityEngine.CoreModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.PhysicsModule">
+			<HintPath>$(ValheimManaged)/UnityEngine.PhysicsModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.AssetBundleModule">
+			<HintPath>$(ValheimManaged)/UnityEngine.AssetBundleModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.AudioModule">
+			<HintPath>$(ValheimManaged)/UnityEngine.AudioModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.ParticleSystemModule">
+			<HintPath>$(ValheimManaged)/UnityEngine.ParticleSystemModule.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="assembly_valheim">
+			<HintPath>$(ValheimManaged)/assembly_valheim.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="assembly_utils">
+			<HintPath>$(ValheimManaged)/assembly_utils.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="assembly_guiutils">
+			<HintPath>$(ValheimManaged)/assembly_guiutils.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<!-- ─── Exclusions ────────────────────────────────────────────────── -->
+	<ItemGroup>
+		<Compile Remove="notes/**" />
+	</ItemGroup>
+
+</Project>

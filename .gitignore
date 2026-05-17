@@ -1,0 +1,6 @@
+/notes
+/bin
+/obj
+*.lscache
+*.user.props
+*.csproj.user
