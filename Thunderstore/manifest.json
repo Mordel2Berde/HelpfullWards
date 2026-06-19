@@ -1,0 +1,11 @@
+{
+  "name": "HelpfullWards",
+  "version_number": "0.6.0",
+  "website_url": "https://github.com/Mordel2Berde/HelpfullWards",
+  "description": "Adds craftable elemental wards (Fire, Frost, Poison, Lightning, Spirit) that damage nearby enemies, plus Repair and Healing wards. Damage, radius, intervals and recipes are fully configurable. English and French included.",
+  "dependencies": [
+    "ValheimModding-Jotunn-2.29.0",
+    "ValheimModding-JsonDotNET-13.0.4",
+    "denikson-BepInExPack_Valheim-5.4.2333"
+  ]
+}
