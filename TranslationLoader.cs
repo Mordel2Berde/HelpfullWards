@@ -48,8 +48,6 @@ namespace HelpfullWards
 			}
 		}
 
-		// ─── Default translation files ────────────────────────────────────────
-
 		private static void WriteDefaults()
 		{
 			Write("English", new Dictionary<string, string>

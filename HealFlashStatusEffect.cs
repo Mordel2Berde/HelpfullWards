@@ -2,13 +2,6 @@ using UnityEngine;
 
 namespace HelpfullWards
 {
-	/// <summary>
-	/// Brief visual-only status effect played on each character healed by the
-	/// Healing Ward. Reuses Valheim's vanilla potion heal VFX
-	/// (vfx_Potion_health_medium), parented to the character so it follows.
-	/// The status effect itself is replicated automatically via SEMan/ZDO,
-	/// so each client spawns the visual locally.
-	/// </summary>
 	public class HealFlashStatusEffect : StatusEffect
 	{
 		public const string Name = "HW_HealFlash";
@@ -20,10 +13,6 @@ namespace HelpfullWards
 
 		private GameObject? _vfxInstance;
 
-		/// <summary>
-		/// Creates the SE asset (once) and registers it in ObjectDB if not
-		/// already present. Idempotent across world reloads.
-		/// </summary>
 		public static void Register()
 		{
 			var odb = ObjectDB.instance;
@@ -55,11 +44,6 @@ namespace HelpfullWards
 				$"list#{odb.m_StatusEffects.GetHashCode()}, count={odb.m_StatusEffects.Count})");
 		}
 
-		// We bypass base.Setup's TriggerStartEffects path because the vfx prefab
-		// carries a ZNetView. If it were instantiated through m_startEffects on
-		// every client, each instance would create its own ZDO and replicate,
-		// resulting in N² visuals. Instead, we instantiate locally on each
-		// client with ZNetView init disabled.
 		public override void Setup(Character character)
 		{
 			Plugin.Logger.LogInfo($"[HealFlashSE] Setup ENTER on {character?.name ?? "null"} (type={GetType().Name})");
@@ -97,15 +81,6 @@ namespace HelpfullWards
 
 		public override void Stop()
 		{
-			// Intentionally do NOT destroy _vfxInstance here. The vfx prefab
-			// (vfx_Potion_health_medium) carries ParticleSystems whose stopAction
-			// destroys the GameObject when their emission cycle finishes. Cutting
-			// the visual at SE TTL would clip the animation. The vfx remains
-			// parented to the character transform and follows / dies with it.
-			//
-			// Skip base.Stop: it dereferences m_character.transform, which can
-			// be null when the SE expires after the character was destroyed.
-			// We have no startEffects / stopEffects / stopMessage to handle.
 			_vfxInstance = null;
 		}
 	}

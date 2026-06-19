@@ -3,44 +3,32 @@ using UnityEngine;
 
 namespace HelpfullWards
 {
-	/// <summary>
-	/// Abstract base class for all ward behaviors.
-	/// Handles ZNetView, randomized timer, and the Update loop.
-	/// Subclasses only need to implement the interval and the action to trigger.
-	/// </summary>
 	public abstract class WardBehavior : MonoBehaviour
 	{
-		private ZNetView        _nview    = null!;
+		private const float MaxCharge = 1f;
+
+		private ZNetView _nview = null!;
 		private HelpfulWardArea _wardArea = null!;
-		private float           _timer;
-		private Light?          _wardLight;
-		private float           _baseIntensity;
+		private Light? _wardLight;
+		private float _baseIntensity;
+		private float _charge = MaxCharge;
+		private float _rechargeDuration;
 
 		public float Radius;
 		protected abstract float Interval { get; }
 		protected abstract bool Tick();
 		protected bool playFlash = true;
-
-		/// <summary>
-		/// Optional additional sound prefab played on tick (via ZNetScene).
-		/// Override in subclasses to play a specific sound effect.
-		/// </summary>
 		protected virtual string? TickSoundPrefab => null;
-
-		private float RandomOffset()
-			=> (Random.Range(0f, 2f * Interval) - Interval) / 10f;
 
 		private void Awake()
 		{
-			_nview    = GetComponent<ZNetView>();
+			_nview = GetComponent<ZNetView>();
 			_wardArea = GetComponent<HelpfulWardArea>();
-			_timer    = RandomOffset();
 
-			_wardLight     = GetComponentInChildren<Light>();
+			_wardLight = GetComponentInChildren<Light>();
 			_baseIntensity = _wardLight != null ? _wardLight.intensity : 1f;
 
-			// RPC triggered on all clients to play the visual effect
-			_nview.Register("HW_PlayTickEffect", (long _) => PlayTickEffect());
+			_nview.Register<float>("HW_Discharge", RPC_Discharge);
 		}
 
 		private void Update()
@@ -48,12 +36,43 @@ namespace HelpfullWards
 			if (_nview == null || !_nview.IsValid() || !_nview.IsOwner()) return;
 			if (!_wardArea.IsEnabled()) return;
 
-			_timer += Time.deltaTime;
-			if (_timer < Interval) return;
-			_timer = RandomOffset();
+			// Recharge in progress: handled by the coroutine, nothing to do.
+			if (_charge < MaxCharge) return;
 
-			if (Tick())
-				_nview.InvokeRPC(ZNetView.Everybody, "HW_PlayTickEffect");
+			if (!Tick()) return;
+
+			float duration = Interval + (Random.Range(0f, 2f * Interval) - Interval) / 10f;
+			_nview.InvokeRPC(ZNetView.Everybody, "HW_Discharge", duration);
+		}
+
+		private void RPC_Discharge(long sender, float duration)
+		{
+			PlayTickEffect();
+
+			_charge = 0f;
+			_rechargeDuration = Mathf.Max(0.01f, duration);
+
+			if (_wardLight != null)
+				_wardLight.intensity = 0f;
+
+			StopCoroutine(nameof(Recharge));
+			StartCoroutine(nameof(Recharge));
+		}
+
+		private IEnumerator Recharge()
+		{
+			float elapsed = 0f;
+			while (elapsed < _rechargeDuration)
+			{
+				elapsed += Time.deltaTime;
+				_charge = Mathf.Min(MaxCharge, elapsed / _rechargeDuration);
+				if (_wardLight != null)
+					_wardLight.intensity = _baseIntensity * _charge;
+				yield return null;
+			}
+			_charge = MaxCharge;
+			if (_wardLight != null)
+				_wardLight.intensity = _baseIntensity;
 		}
 
 		private void PlayTickEffect()
@@ -67,38 +86,6 @@ namespace HelpfullWards
 				if (sfxPrefab != null)
 					UnityEngine.Object.Instantiate(sfxPrefab, transform.position, Quaternion.identity);
 			}
-
-			if (_wardLight == null) return;
-			StopCoroutine("PulseLight");
-			StartCoroutine(PulseLight());
-		}
-
-		private IEnumerator PulseLight()
-		{
-			const float duration      = 0.6f;
-			const float peakMultiplier = 4f;
-
-			// Rise
-			float elapsed = 0f;
-			while (elapsed < duration / 2f)
-			{
-				float t = elapsed / (duration / 2f);
-				_wardLight!.intensity = _baseIntensity * Mathf.Lerp(1f, peakMultiplier, t);
-				elapsed += Time.deltaTime;
-				yield return null;
-			}
-
-			// Fall
-			elapsed = 0f;
-			while (elapsed < duration / 2f)
-			{
-				float t = elapsed / (duration / 2f);
-				_wardLight!.intensity = _baseIntensity * Mathf.Lerp(peakMultiplier, 1f, t);
-				elapsed += Time.deltaTime;
-				yield return null;
-			}
-
-			_wardLight!.intensity = _baseIntensity;
 		}
 	}
 }
