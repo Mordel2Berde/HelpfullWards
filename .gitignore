@@ -4,3 +4,5 @@
 *.lscache
 *.user.props
 *.csproj.user
+/Thunderstore/build
+/Thunderstore/*.zip
