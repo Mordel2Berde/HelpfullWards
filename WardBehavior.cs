@@ -7,10 +7,16 @@ namespace HelpfullWards
 	{
 		private const float MaxCharge = 1f;
 
+		private const float MinGlyphEmission = 0.5f;
+		private const float MaxGlyphEmission = 3f;
+		private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+
 		private ZNetView _nview = null!;
 		private HelpfulWardArea _wardArea = null!;
 		private Light? _wardLight;
 		private float _baseIntensity;
+		private Material? _glyphMaterial;
+		private Color _glyphBaseEmission;
 		private float _charge = MaxCharge;
 		private float _rechargeDuration;
 
@@ -24,11 +30,31 @@ namespace HelpfullWards
 		{
 			_nview = GetComponent<ZNetView>();
 			_wardArea = GetComponent<HelpfulWardArea>();
-
 			_wardLight = GetComponentInChildren<Light>();
 			_baseIntensity = _wardLight != null ? _wardLight.intensity : 1f;
+			foreach (var rend in GetComponentsInChildren<Renderer>(includeInactive: true))
+			{
+				var shared = rend.sharedMaterials;
+				for (int i = 0; i < shared.Length; i++)
+				{
+					if (shared[i] == null
+						|| !shared[i].name.StartsWith("Guardstone_OdenGlow_mat")
+						|| !shared[i].HasProperty(EmissionColorId))
+						continue;
 
+					_glyphMaterial = rend.materials[i];
+					_glyphBaseEmission = _glyphMaterial.GetColor(EmissionColorId);
+				}
+			}
+			ApplyGlyphCharge(_charge);
 			_nview.Register<float>("HW_Discharge", RPC_Discharge);
+		}
+
+		private void ApplyGlyphCharge(float charge)
+		{
+			if (_glyphMaterial == null) return;
+			float factor = Mathf.Lerp(MinGlyphEmission, MaxGlyphEmission, charge);
+			_glyphMaterial.SetColor(EmissionColorId, _glyphBaseEmission * factor);
 		}
 
 		private void Update()
@@ -36,7 +62,6 @@ namespace HelpfullWards
 			if (_nview == null || !_nview.IsValid() || !_nview.IsOwner()) return;
 			if (!_wardArea.IsEnabled()) return;
 
-			// Recharge in progress: handled by the coroutine, nothing to do.
 			if (_charge < MaxCharge) return;
 
 			if (!Tick()) return;
@@ -54,6 +79,7 @@ namespace HelpfullWards
 
 			if (_wardLight != null)
 				_wardLight.intensity = 0f;
+			ApplyGlyphCharge(_charge);
 
 			StopCoroutine(nameof(Recharge));
 			StartCoroutine(nameof(Recharge));
@@ -65,14 +91,16 @@ namespace HelpfullWards
 			while (elapsed < _rechargeDuration)
 			{
 				elapsed += Time.deltaTime;
-				_charge = Mathf.Min(MaxCharge, elapsed / _rechargeDuration);
+				_charge = Mathf.Min(MaxCharge, MaxCharge * elapsed / _rechargeDuration);
 				if (_wardLight != null)
 					_wardLight.intensity = _baseIntensity * _charge;
+				ApplyGlyphCharge(_charge);
 				yield return null;
 			}
 			_charge = MaxCharge;
 			if (_wardLight != null)
 				_wardLight.intensity = _baseIntensity;
+			ApplyGlyphCharge(_charge);
 		}
 
 		private void PlayTickEffect()
