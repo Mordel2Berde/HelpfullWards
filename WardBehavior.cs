@@ -7,8 +7,8 @@ namespace HelpfullWards
 	{
 		private const float MaxCharge = 1f;
 
-		private const float MinGlyphEmission = 0.5f;
-		private const float MaxGlyphEmission = 3f;
+		private const float MinGlyphEmission = 0.1f;
+		private const float MaxGlyphEmission = 1f;
 		private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
 		private ZNetView _nview = null!;

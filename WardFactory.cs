@@ -31,7 +31,7 @@ namespace HelpfullWards
 				"piece_ward_fire",
 				"$hw_ward_fire",
 				"$hw_ward_fire_desc",
-				new Color(1f, 0.15f, 0f),
+				new Color(1f, 0f, 0f),
 				ElementalWardBehavior.Element.Fire,
 				WardConfig.FireRadius.Value,
 				WardConfig.ParseIngredients(WardConfig.FireIngredients.Value));
@@ -40,7 +40,7 @@ namespace HelpfullWards
 				"piece_ward_frost",
 				"$hw_ward_frost",
 				"$hw_ward_frost_desc",
-				new Color(0.85f, 0.95f, 1f),
+				new Color(0.8f, 0.8f, 0.8f),
 				ElementalWardBehavior.Element.Frost,
 				WardConfig.FrostRadius.Value,
 				WardConfig.ParseIngredients(WardConfig.FrostIngredients.Value));
@@ -49,7 +49,7 @@ namespace HelpfullWards
 				"piece_ward_poison",
 				"$hw_ward_poison",
 				"$hw_ward_poison_desc",
-				new Color(0.1f, 0.9f, 0.1f),
+				new Color(0f, 1f, 0f),
 				ElementalWardBehavior.Element.Poison,
 				WardConfig.PoisonRadius.Value,
 				WardConfig.ParseIngredients(WardConfig.PoisonIngredients.Value));
@@ -58,7 +58,7 @@ namespace HelpfullWards
 				"piece_ward_lightning",
 				"$hw_ward_lightning",
 				"$hw_ward_lightning_desc",
-				new Color(0.2f, 0.75f, 1f),
+				new Color(0.5f, 0.5f, 1f),
 				ElementalWardBehavior.Element.Lightning,
 				WardConfig.LightningRadius.Value,
 				WardConfig.ParseIngredients(WardConfig.LightningIngredients.Value));
@@ -67,7 +67,7 @@ namespace HelpfullWards
 				"piece_ward_spirit",
 				"$hw_ward_spirit",
 				"$hw_ward_spirit_desc",
-				new Color(0.65f, 0.1f, 1f),
+				new Color(0.5f, 0f, 1f),
 				ElementalWardBehavior.Element.Spirit,
 				WardConfig.SpiritRadius.Value,
 				WardConfig.ParseIngredients(WardConfig.SpiritIngredients.Value));
@@ -76,7 +76,7 @@ namespace HelpfullWards
 				"piece_ward_repair",
 				"$hw_ward_repair",
 				"$hw_ward_repair_desc",
-				new Color(1f, 0.45f, 0f),
+				new Color(0.8f, 0.5f, 0f),
 				WardConfig.RepairRadius.Value,
 				WardConfig.ParseIngredients(WardConfig.RepairIngredients.Value));
 
@@ -84,7 +84,7 @@ namespace HelpfullWards
 				"piece_ward_healing",
 				"$hw_ward_healing",
 				"$hw_ward_healing_desc",
-				new Color(1f, 0.35f, 0.65f),
+				new Color(1f, 0f, 1f),
 				WardConfig.HealRadius.Value,
 				WardConfig.ParseIngredients(WardConfig.HealIngredients.Value));
 
