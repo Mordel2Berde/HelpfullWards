@@ -46,7 +46,7 @@ namespace HelpfullWards
 
 		public override void Setup(Character character)
 		{
-			Plugin.Logger.LogInfo($"[HealFlashSE] Setup ENTER on {character?.name ?? "null"} (type={GetType().Name})");
+//			Plugin.Logger.LogInfo($"[HealFlashSE] Setup ENTER on {character?.name ?? "null"} (type={GetType().Name})");
 			try
 			{
 				m_character = character;

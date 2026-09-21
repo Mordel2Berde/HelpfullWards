@@ -9,6 +9,7 @@ namespace HelpfullWards
 	/// </summary>
 	public class RepairWardBehavior : WardBehavior
 	{
+		public override float Radius   => WardConfig.RepairRadius.Value;
 		protected override float Interval => WardConfig.RepairInterval.Value;
 
 		private void Start()

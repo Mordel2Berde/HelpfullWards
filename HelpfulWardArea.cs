@@ -11,11 +11,11 @@ namespace HelpfullWards
 	public class HelpfulWardArea : MonoBehaviour, Hoverable, Interactable
 	{
 		public string           m_name             = "";
-		public float            m_radius           = 10f;
 		public bool             m_enabledByDefault = true;
 		public GameObject?      m_enabledEffect;
 		public MeshRenderer?    m_model;
 		public CircleProjector? m_areaMarker;
+		public float            m_hoverOffset;
 		public EffectList       m_flashEffect      = new EffectList();
 		public EffectList       m_activateEffect   = new EffectList();
 		public EffectList       m_deactivateEffect = new EffectList();
@@ -27,6 +27,10 @@ namespace HelpfullWards
 
 		private void Awake()
 		{
+			// Before the validity check so the placement ghost also shows the configured radius
+			if (m_areaMarker != null)
+				m_areaMarker.m_radius = GetComponent<WardBehavior>().Radius;
+
 			m_nview = GetComponent<ZNetView>();
 			if (!m_nview.IsValid()) return;
 
@@ -84,6 +88,8 @@ namespace HelpfullWards
 
 		public string GetHoverName() => m_name;
 
+		public float GetHoverOffset() => m_hoverOffset;
+
 		public string GetHoverText()
 		{
 			if (!m_nview.IsValid() || Player.m_localPlayer == null)
@@ -127,6 +133,7 @@ namespace HelpfullWards
 		public void ShowAreaMarker()
 		{
 			if (m_areaMarker == null) return;
+			m_areaMarker.m_radius = GetComponent<WardBehavior>().Radius;
 			m_areaMarker.gameObject.SetActive(true);
 			CancelInvoke(nameof(HideMarker));
 			Invoke(nameof(HideMarker), 0.5f);

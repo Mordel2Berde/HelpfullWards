@@ -1,16 +1,18 @@
 using BepInEx;
 using HarmonyLib;
 using Jotunn.Managers;
+using Jotunn.Utils;
 
 namespace HelpfullWards
 {
 	[BepInPlugin(PluginGUID, PluginName, PluginVersion)]
 	[BepInDependency(Jotunn.Main.ModGuid)]
+	[NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
 	public class Plugin : BaseUnityPlugin
 	{
 		public const string PluginGUID    = "Mordel2Berde.HelpfullWards";
 		public const string PluginName    = "HelpfullWards";
-		public const string PluginVersion = "0.6.0";
+		public const string PluginVersion = "0.7.0";
 
 		internal static new BepInEx.Logging.ManualLogSource Logger = null!;
 		private readonly Harmony _harmony = new Harmony(PluginGUID);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BepInEx.Configuration;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
@@ -33,8 +34,7 @@ namespace HelpfullWards
 				"$hw_ward_fire_desc",
 				new Color(1f, 0f, 0f),
 				ElementalWardBehavior.Element.Fire,
-				WardConfig.FireRadius.Value,
-				WardConfig.ParseIngredients(WardConfig.FireIngredients.Value));
+				WardConfig.FireIngredients);
 
 			RegisterElemental(
 				"piece_ward_frost",
@@ -42,8 +42,7 @@ namespace HelpfullWards
 				"$hw_ward_frost_desc",
 				new Color(0.8f, 0.8f, 0.8f),
 				ElementalWardBehavior.Element.Frost,
-				WardConfig.FrostRadius.Value,
-				WardConfig.ParseIngredients(WardConfig.FrostIngredients.Value));
+				WardConfig.FrostIngredients);
 
 			RegisterElemental(
 				"piece_ward_poison",
@@ -51,8 +50,7 @@ namespace HelpfullWards
 				"$hw_ward_poison_desc",
 				new Color(0f, 1f, 0f),
 				ElementalWardBehavior.Element.Poison,
-				WardConfig.PoisonRadius.Value,
-				WardConfig.ParseIngredients(WardConfig.PoisonIngredients.Value));
+				WardConfig.PoisonIngredients);
 
 			RegisterElemental(
 				"piece_ward_lightning",
@@ -60,8 +58,7 @@ namespace HelpfullWards
 				"$hw_ward_lightning_desc",
 				new Color(0.5f, 0.5f, 1f),
 				ElementalWardBehavior.Element.Lightning,
-				WardConfig.LightningRadius.Value,
-				WardConfig.ParseIngredients(WardConfig.LightningIngredients.Value));
+				WardConfig.LightningIngredients);
 
 			RegisterElemental(
 				"piece_ward_spirit",
@@ -69,24 +66,21 @@ namespace HelpfullWards
 				"$hw_ward_spirit_desc",
 				new Color(0.5f, 0f, 1f),
 				ElementalWardBehavior.Element.Spirit,
-				WardConfig.SpiritRadius.Value,
-				WardConfig.ParseIngredients(WardConfig.SpiritIngredients.Value));
+				WardConfig.SpiritIngredients);
 
 			RegisterSpecial<RepairWardBehavior>(
 				"piece_ward_repair",
 				"$hw_ward_repair",
 				"$hw_ward_repair_desc",
 				new Color(0.8f, 0.5f, 0f),
-				WardConfig.RepairRadius.Value,
-				WardConfig.ParseIngredients(WardConfig.RepairIngredients.Value));
+				WardConfig.RepairIngredients);
 
 			RegisterSpecial<HealingWardBehavior>(
 				"piece_ward_healing",
 				"$hw_ward_healing",
 				"$hw_ward_healing_desc",
 				new Color(1f, 0f, 1f),
-				WardConfig.HealRadius.Value,
-				WardConfig.ParseIngredients(WardConfig.HealIngredients.Value));
+				WardConfig.HealIngredients);
 
 			PrefabManager.OnVanillaPrefabsAvailable -= RegisterWards;
 		}
@@ -94,31 +88,28 @@ namespace HelpfullWards
 		private static void RegisterElemental(
 			string prefabName, string displayName, string desc,
 			Color lightColor, ElementalWardBehavior.Element element,
-			float radius,
-			params RequirementConfig[] reqs)
+			ConfigEntry<string> ingredients)
 		{
-			var go = CloneWard(prefabName, lightColor, displayName, radius);
+			var go = CloneWard(prefabName, lightColor, displayName);
 			if (go == null) return;
 
 			go.AddComponent<ElementalWardBehavior>().DamageElement = element;
-			go.GetComponent<ElementalWardBehavior>().Radius = radius;
-			RegisterPiece(go, displayName, desc, reqs);
+			RegisterPiece(go, displayName, desc, ingredients);
 		}
 
 		private static void RegisterSpecial<T>(
 			string prefabName, string displayName, string desc,
-			Color lightColor, float radius,
-			params RequirementConfig[] reqs) where T : WardBehavior
+			Color lightColor,
+			ConfigEntry<string> ingredients) where T : WardBehavior
 		{
-			var go = CloneWard(prefabName, lightColor, displayName, radius);
+			var go = CloneWard(prefabName, lightColor, displayName);
 			if (go == null) return;
 
 			go.AddComponent<T>();
-			go.GetComponent<T>().Radius = radius;
-			RegisterPiece(go, displayName, desc, reqs);
+			RegisterPiece(go, displayName, desc, ingredients);
 		}
 
-		private static GameObject? CloneWard(string name, Color lightColor, string displayName, float radius)
+		private static GameObject? CloneWard(string name, Color lightColor, string displayName)
 		{
 			var go = PrefabManager.Instance.CreateClonedPrefab(name, "guard_stone");
 			if (go == null)
@@ -131,11 +122,11 @@ namespace HelpfullWards
 			var pa  = go.GetComponent<PrivateArea>();
 			var hwa = go.AddComponent<HelpfulWardArea>();
 			hwa.m_name             = displayName;
-			hwa.m_radius           = radius;
 			hwa.m_enabledByDefault = true;
 			hwa.m_enabledEffect    = pa.m_enabledEffect;
 			hwa.m_model            = pa.m_model;
 			hwa.m_areaMarker       = pa.m_areaMarker;
+			hwa.m_hoverOffset      = pa.m_hoverOffset;
 			hwa.m_flashEffect      = pa.m_flashEffect;
 			hwa.m_activateEffect   = pa.m_activateEffect;
 			hwa.m_deactivateEffect = pa.m_deactivateEffect;
@@ -174,17 +165,23 @@ namespace HelpfullWards
 
 		private static void RegisterPiece(
 			GameObject go, string displayName, string desc,
-			RequirementConfig[] reqs)
+			ConfigEntry<string> ingredients)
 		{
-			PieceManager.Instance.AddPiece(new CustomPiece(go, fixReference: true, new PieceConfig
+			var piece = new CustomPiece(go, fixReference: true, new PieceConfig
 			{
 				Name            = displayName,
 				Description     = desc,
 				PieceTable      = "_HammerPieceTable",
 				Category        = "Misc",
 				CraftingStation = "piece_workbench",
-				Requirements    = reqs,
-			}));
+				Requirements    = WardConfig.ParseIngredients(ingredients.Value),
+			});
+			PieceManager.Instance.AddPiece(piece);
+
+			// Fired when the server pushes its config, when local values are restored
+			// on disconnect, and on in-game edits: update the recipe on the prefab.
+			ingredients.SettingChanged += (_, _) =>
+				piece.Piece.m_resources = WardConfig.ToRequirements(ingredients.Value);
 		}
 
 	}

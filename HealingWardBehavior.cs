@@ -9,6 +9,7 @@ namespace HelpfullWards
 	/// </summary>
 	public class HealingWardBehavior : WardBehavior
 	{
+		public override float Radius   => WardConfig.HealRadius.Value;
 		protected override float Interval => WardConfig.HealInterval.Value;
 		protected override string? TickSoundPrefab => "sfx_dverger_heal_finish";
 

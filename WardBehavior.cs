@@ -20,7 +20,7 @@ namespace HelpfullWards
 		private float _charge = MaxCharge;
 		private float _rechargeDuration;
 
-		public float Radius;
+		public abstract float Radius { get; }
 		protected abstract float Interval { get; }
 		protected abstract bool Tick();
 		protected bool playFlash = true;

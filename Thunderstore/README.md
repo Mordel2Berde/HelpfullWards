@@ -32,6 +32,12 @@ Everything is editable through the BepInEx config file
 - Crafting recipe of each ward (`ItemName:Amount`, comma-separated)
 - Factions excluded from elemental damage
 
+## Multiplayer
+
+The mod must be installed on the server and on every client (same major.minor
+version); clients without it are refused. The server's configuration is pushed
+to all clients on connection and whenever an admin changes it in-game.
+
 ## Translations
 
 English and French are bundled. Additional languages can be added by dropping a

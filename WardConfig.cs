@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using BepInEx.Configuration;
 using Jotunn.Configs;
+using Jotunn.Managers;
 
 namespace HelpfullWards
 {
@@ -44,54 +45,85 @@ namespace HelpfullWards
 		private const string IngredientsDesc =
 			"Crafting ingredients (comma-separated, format: ItemName:Amount).";
 
-		public static void Init(ConfigFile cfg)
+		private static HashSet<Character.Faction>? _excludedFactions;
+
+		private static ConfigEntry<T> Bind<T>(ConfigFile cfg, string section, string key, T value, string description)
 		{
-			ElementalTickInterval = cfg.Bind("Elemental", "TickInterval", 11f,
-				"Seconds between each elemental damage tick.");
-
-			ElementalExcludedFactions = cfg.Bind("Elemental", "ExcludedFactions",
-				"Players,Dverger",
-				"Factions excluded from elemental damage (comma-separated).\n" +
-				"Possible values: Players, AnimaI, ForestMonsters, Undead, Demon, " +
-				"MountainMonsters, SeaMonsters, PlainsMonsters, Boss");
-
-			FireDamage         = cfg.Bind("Ward_Fire",      "Damage",       11f,  "Fire damage per tick.");
-			FireRadius         = cfg.Bind("Ward_Fire",      "Radius",       32f,  "Fire ward radius (meters).");
-			FireIngredients    = cfg.Bind("Ward_Fire",      "Ingredients",  "FineWood:5,TrophySurtling:11,Eitr:1", IngredientsDesc);
-
-			FrostDamage        = cfg.Bind("Ward_Frost",     "Damage",       11f,  "Frost damage per tick.");
-			FrostRadius        = cfg.Bind("Ward_Frost",     "Radius",       32f,  "Frost ward radius (meters).");
-			FrostIngredients   = cfg.Bind("Ward_Frost",     "Ingredients",  "FineWood:5,TrophyHatchling:11,Eitr:1", IngredientsDesc);
-
-			PoisonDamage       = cfg.Bind("Ward_Poison",    "Damage",       11f,  "Poison damage per tick.");
-			PoisonRadius       = cfg.Bind("Ward_Poison",    "Radius",       32f,  "Poison ward radius (meters).");
-			PoisonIngredients  = cfg.Bind("Ward_Poison",    "Ingredients",  "FineWood:5,TrophyBlob:11,Eitr:1", IngredientsDesc);
-
-			LightningDamage      = cfg.Bind("Ward_Lightning", "Damage",       11f,  "Lightning damage per tick.");
-			LightningRadius      = cfg.Bind("Ward_Lightning", "Radius",       32f,  "Lightning ward radius (meters).");
-			LightningIngredients = cfg.Bind("Ward_Lightning", "Ingredients",  "FineWood:5,Crystal:11,Eitr:1", IngredientsDesc);
-
-			SpiritDamage       = cfg.Bind("Ward_Spirit",    "Damage",       11f,  "Spirit damage per tick.");
-			SpiritRadius       = cfg.Bind("Ward_Spirit",    "Radius",       32f,  "Spirit ward radius (meters).");
-			SpiritIngredients  = cfg.Bind("Ward_Spirit",    "Ingredients",  "FineWood:5,TrophyGhost:11,Eitr:1", IngredientsDesc);
-
-			RepairInterval     = cfg.Bind("Ward_Repair",   "Interval",     11f,  "Seconds between each automatic repair.");
-			RepairRadius       = cfg.Bind("Ward_Repair",   "Radius",       32f,  "Repair ward radius (meters).");
-			RepairIngredients  = cfg.Bind("Ward_Repair",   "Ingredients",  "FineWood:5,YggdrasilWood:11,Eitr:1", IngredientsDesc);
-
-			HealInterval       = cfg.Bind("Ward_Healing",  "Interval",     11f,  "Seconds between each automatic heal.");
-			HealAmount         = cfg.Bind("Ward_Healing",  "HealAmount",   11f,  "Hit points restored per tick.");
-			HealRadius         = cfg.Bind("Ward_Healing",  "Radius",       32f,  "Healing ward radius (meters).");
-			HealIngredients    = cfg.Bind("Ward_Healing",  "Ingredients",  "FineWood:5,TrophyGreydwarfShaman:11,Eitr:1", IngredientsDesc);
+			return cfg.Bind(section, key, value, new ConfigDescription(description, null,
+				new ConfigurationManagerAttributes { IsAdminOnly = true }));
 		}
 
-		public static HashSet<Character.Faction> GetExcludedFactions()
+		public static void Init(ConfigFile cfg)
 		{
-			var result = new HashSet<Character.Faction>();
-			foreach (var s in ElementalExcludedFactions.Value.Split(','))
-				if (System.Enum.TryParse(s.Trim(), out Character.Faction f))
-					result.Add(f);
-			return result;
+			ElementalTickInterval = Bind(cfg, "Elemental", "TickInterval", 11f,
+				"Seconds between each elemental damage tick.");
+
+			ElementalExcludedFactions = Bind(cfg, "Elemental", "ExcludedFactions",
+				"Players,Dverger",
+				"Factions excluded from elemental damage (comma-separated).\n" +
+				"Possible values: Players, AnimalsVeg, ForestMonsters, Undead, Demon, " +
+				"MountainMonsters, SeaMonsters, PlainsMonsters, Boss, DeepNorth");
+
+			FireDamage         = Bind(cfg, "Ward_Fire",      "Damage",       11f,  "Fire damage per tick.");
+			FireRadius         = Bind(cfg, "Ward_Fire",      "Radius",       32f,  "Fire ward radius (meters).");
+			FireIngredients    = Bind(cfg, "Ward_Fire",      "Ingredients",  "FineWood:11,TrophySurtling:3,SurtlingCore:1", IngredientsDesc);
+
+			FrostDamage        = Bind(cfg, "Ward_Frost",     "Damage",       11f,  "Frost damage per tick.");
+			FrostRadius        = Bind(cfg, "Ward_Frost",     "Radius",       32f,  "Frost ward radius (meters).");
+			FrostIngredients   = Bind(cfg, "Ward_Frost",     "Ingredients",  "FineWood:11,TrophyHatchling:3,SurtlingCore:1", IngredientsDesc);
+
+			PoisonDamage       = Bind(cfg, "Ward_Poison",    "Damage",       11f,  "Poison damage per tick.");
+			PoisonRadius       = Bind(cfg, "Ward_Poison",    "Radius",       32f,  "Poison ward radius (meters).");
+			PoisonIngredients  = Bind(cfg, "Ward_Poison",    "Ingredients",  "FineWood:11,TrophyBlob:3,SurtlingCore:1", IngredientsDesc);
+
+			LightningDamage      = Bind(cfg, "Ward_Lightning", "Damage",       11f,  "Lightning damage per tick.");
+			LightningRadius      = Bind(cfg, "Ward_Lightning", "Radius",       32f,  "Lightning ward radius (meters).");
+			LightningIngredients = Bind(cfg, "Ward_Lightning", "Ingredients",  "FineWood:11,Crystal:3,SurtlingCore:1", IngredientsDesc);
+
+			SpiritDamage       = Bind(cfg, "Ward_Spirit",    "Damage",       11f,  "Spirit damage per tick.");
+			SpiritRadius       = Bind(cfg, "Ward_Spirit",    "Radius",       32f,  "Spirit ward radius (meters).");
+			SpiritIngredients  = Bind(cfg, "Ward_Spirit",    "Ingredients",  "FineWood:11,TrophyGhost:3,SurtlingCore:1", IngredientsDesc);
+
+			RepairInterval     = Bind(cfg, "Ward_Repair",   "Interval",     11f,  "Seconds between each automatic repair.");
+			RepairRadius       = Bind(cfg, "Ward_Repair",   "Radius",       32f,  "Repair ward radius (meters).");
+			RepairIngredients  = Bind(cfg, "Ward_Repair",   "Ingredients",  "FineWood:11,Root:3,SurtlingCore:1", IngredientsDesc);
+
+			HealInterval       = Bind(cfg, "Ward_Healing",  "Interval",     11f,  "Seconds between each automatic heal.");
+			HealAmount         = Bind(cfg, "Ward_Healing",  "HealAmount",   11f,  "Hit points restored per tick.");
+			HealRadius         = Bind(cfg, "Ward_Healing",  "Radius",       32f,  "Healing ward radius (meters).");
+			HealIngredients    = Bind(cfg, "Ward_Healing",  "Ingredients",  "FineWood:11,TrophyGreydwarfShaman:3,SurtlingCore:1", IngredientsDesc);
+
+			ElementalExcludedFactions.SettingChanged += (_, _) => _excludedFactions = null;
+		}
+
+		public static HashSet<Character.Faction> ExcludedFactions
+		{
+			get
+			{
+				if (_excludedFactions != null)
+					return _excludedFactions;
+				_excludedFactions = new HashSet<Character.Faction>();
+				foreach (var s in ElementalExcludedFactions.Value.Split(','))
+					if (System.Enum.TryParse(s.Trim(), out Character.Faction f))
+						_excludedFactions.Add(f);
+				return _excludedFactions;
+			}
+		}
+
+		public static Piece.Requirement[] ToRequirements(string value)
+		{
+			var result = new List<Piece.Requirement>();
+			foreach (var req in ParseIngredients(value))
+			{
+				var item = PrefabManager.Cache.GetPrefab<ItemDrop>(req.Item);
+				if (item == null)
+				{
+					Plugin.Logger.LogWarning($"[HelpfullWards] Unknown ingredient item: {req.Item}");
+					continue;
+				}
+				result.Add(new Piece.Requirement { m_resItem = item, m_amount = req.Amount, m_recover = req.Recover });
+			}
+			return result.ToArray();
 		}
 
 		public static RequirementConfig[] ParseIngredients(string value)

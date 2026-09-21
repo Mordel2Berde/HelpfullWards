@@ -11,9 +11,14 @@ namespace HelpfullWards
 
 		protected override float Interval => WardConfig.ElementalTickInterval.Value;
 
-		private static HashSet<Character.Faction>? _excluded;
-		private static HashSet<Character.Faction> Excluded
-			=> _excluded ??= WardConfig.GetExcludedFactions();
+		public override float Radius => DamageElement switch
+		{
+			Element.Fire => WardConfig.FireRadius.Value,
+			Element.Frost => WardConfig.FrostRadius.Value,
+			Element.Poison => WardConfig.PoisonRadius.Value,
+			Element.Lightning => WardConfig.LightningRadius.Value,
+			_ => WardConfig.SpiritRadius.Value,
+		};
 
 		private static readonly Dictionary<Element, string> StatusEffectNames = new()
 		{
@@ -36,7 +41,7 @@ namespace HelpfullWards
 			var targets = new List<Character>();
 			foreach (var c in all)
 			{
-				if (c == null || Excluded.Contains(c.m_faction) || c.IsTamed()) continue;
+				if (c == null || WardConfig.ExcludedFactions.Contains(c.m_faction) || c.IsTamed()) continue;
 				targets.Add(c);
 			}
 

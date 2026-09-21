@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+- Mod required on server and all clients (version check on connection)
+- Server configuration enforced on all clients.
+- default recipes changed.
+
 ## 0.6.1
 
 - Real elemental status effects (well anderstand now)
