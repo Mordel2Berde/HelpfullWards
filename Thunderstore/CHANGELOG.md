@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1
+
+- Healing ward no longer remove positive effects.
+
 ## 0.7.0
 
 - Mod required on server and all clients (version check on connection)
