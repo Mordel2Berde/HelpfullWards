@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2
+
+- Healing ward no longer heal boss.
+
 ## 0.7.1
 
 - Healing ward no longer remove positive effects.
