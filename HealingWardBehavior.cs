@@ -31,8 +31,10 @@ namespace HelpfullWards
 			Character.GetCharactersInRange(transform.position, Radius, characters);
 			foreach (var c in characters)
 			{
-				if (c == null || c.IsMonsterFaction(Time.time)) continue;
-				if (c.GetHealth() >= c.GetMaxHealth()) continue;
+				if (c == null || c.IsMonsterFaction(Time.time) || c.IsBoss())
+					continue;
+				if (c.GetHealth() >= c.GetMaxHealth())
+					continue;
 				acted = true;
 				foreach (var hash in CleansedEffects)
 					c.GetSEMan().RemoveStatusEffect(hash, true);

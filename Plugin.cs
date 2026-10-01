@@ -12,7 +12,7 @@ namespace HelpfullWards
 	{
 		public const string PluginGUID    = "Mordel2Berde.HelpfullWards";
 		public const string PluginName    = "HelpfullWards";
-		public const string PluginVersion = "0.7.1";
+		public const string PluginVersion = "0.7.2";
 
 		internal static new BepInEx.Logging.ManualLogSource Logger = null!;
 		private readonly Harmony _harmony = new Harmony(PluginGUID);
